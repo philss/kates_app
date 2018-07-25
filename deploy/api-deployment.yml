@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: api
+    spec:
+      volumes:
+        - name: secrets
+          secret:
+            secretName: secrets
+      containers:
+        - name: api
+          image: us.gcr.io/kates-app-elug/kates_app:73c8d4e87fcbfcffe4fce115fe649d219c3abea8
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 4000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "300m"
+          volumeMounts:
+            - name: secrets
+              mountPath: "/etc/secrets"
+              readOnly: true
+          env:
+            - name: POOL_SIZE
+              value: "10"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: DATABASE_URL
